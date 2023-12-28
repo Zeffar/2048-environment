@@ -18,8 +18,8 @@ File contents:
     
  2. For Linux, cd into the 2048-environment directory and run the following commands:
 ```
-g++ move.cpp
-./a.out
+g++ move.cpp -o main  ->  compiles the program, run if you change the source-code in move.cpp.
+./main                ->  runs the program.
 ```
  3. In `output.txt` you will find:
 ```
