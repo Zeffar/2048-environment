@@ -1,4 +1,4 @@
-2048 enviroment for RL 2023 - UniBuc
+2048 environment for RL 2023 - UniBuc
 ```
 File contents:
 ├── move.cpp
@@ -7,7 +7,7 @@ File contents:
 └── score.txt
 ```
 
- How to use this enviroment: 
+ How to use this environment: 
  1. Put the current state (4x4 matrix) into `input.txt`, followed by the move you wish to make
 ```
     0 - up
@@ -16,7 +16,7 @@ File contents:
     3 - left
 ```
     
- 2. For Linux, cd into the 2048-enviroment directory and run the following commands:
+ 2. For Linux, cd into the 2048-environment directory and run the following commands:
 ```
 g++ move.cpp
 ./a.out
