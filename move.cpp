@@ -1,8 +1,7 @@
 #include <fstream>
 #include <vector>
-#include <queue>
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
 using namespace std;
 ifstream f("input.txt");
 ofstream g("output.txt");
@@ -16,9 +15,10 @@ int evaluate();
 int a[4][4];
 int main()
 {
+    int x{};
     for (int i = 0; i < 4; ++i) {
         for (int j = 0; j < 4; ++j) {
-            int x; f>>x;
+            f>>x;
             if(x) a[i][j]=int(log2(x));
         }
     }
