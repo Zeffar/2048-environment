@@ -5,7 +5,6 @@
 using namespace std;
 ifstream f("input.txt");
 ofstream g("output.txt");
-ofstream h("score.txt");
 void move_up(bool &ok);
 void move_right(bool &ok);
 void move_down(bool &ok);
@@ -44,33 +43,8 @@ int main()
         }
         g<<'\n';
     }
-    h<<evaluate();
     return 0;
 
-}
-
-
-
-
-
-int evaluate (){ int score=0;
-    vector<int> tiles; tiles.reserve(16);
-
-    for(int i=0; i<4; i++)
-        for(int j=0; j<4; j++) {
-            int val=int(a[i][j]);
-            if(val) tiles.push_back(val);
-        }
-    sort(tiles.begin(), tiles.end(), greater<int>());
-
-    int cnt{};
-    for(int i=3; i; i--)
-        for(int j=3; j; j--)
-        {
-            if(!tiles[cnt]) return score;
-            if(tiles[cnt++]==int(a[i][j])) score=score+int(a[i][j])*(i*4+j);
-        }
-    return score;
 }
 
 //move functions
