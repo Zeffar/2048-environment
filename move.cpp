@@ -9,7 +9,6 @@ void move_up(bool &ok);
 void move_right(bool &ok);
 void move_down(bool &ok);
 void move_left(bool &ok);
-int evaluate();
 
 int a[4][4];
 int main()
