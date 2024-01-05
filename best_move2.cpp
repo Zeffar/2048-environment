@@ -1,6 +1,6 @@
 #include <fstream>
 #include <vector>
-#include <cmath>                                      ////old version that uses files!!!!!!!!!!!
+#include <cmath>              //////////////modified all functions to not use files anymore, but nodes
 #include <algorithm>
 #include <iostream>
 using namespace std;
@@ -11,7 +11,7 @@ void move_down(bool &ok, int a[4][4]);
 void move_left(bool &ok, int a[4][4]);
 void make_tree(string b, int depth, int width);
 int evaluate(int board[4][4]);
-void next_board(string s);
+bool next_board(int o_board[4][4], int i_board[4][4], int move);
 
 int main()
 {
@@ -26,46 +26,63 @@ struct node {
     int parent;
 };
 
-void make_tree(string b, int depth, int width){
+void make_tree(string b, int depth, int width){ //reads a state from a file and gives the next best move
 
-    int tree[2][width], x; //change to node later
+    node tree[2][width]; //2 rows for list of current states of the board and for list of board with the 2s generated on them
+    int x; 
+    short parent_nr = 0; //to count how many parents of the big 4 are valid
+
     ifstream brd(b);
     int board[4][4] = {{0,0,0,0},
                        {0,0,0,0},
                        {0,0,0,0},
                        {0,0,0,0}};
 
-    for (int i = 0; i < 4; ++i) {  //read board from file
+
+    for (int i = 0; i < 4; ++i)  //read board from file 
         for (int j = 0; j < 4; ++j) {
             brd>>x;
-            if (x){
+            if (x)
                 board[i][j]=int(log2(x));
-            }
         }
+
+    x = next_board(tree[0][parent_nr].board,board,0); //will write in 'tree[0][parent_nr].board', the board for the very first node in the first row of the tree, the modified 'board' after move '0' and x will verify if the fct outputed true or false
+    if (x) {
+        tree[0][parent_nr].parent = 1;
+        parent_nr++; //goes ot the next node of the first row of the tree
+    }
+    x = next_board(tree[0][parent_nr].board,board,1);
+    if (x) {
+        tree[0][parent_nr].parent = 2;
+        parent_nr++;
+    }
+    x = next_board(tree[0][parent_nr].board,board,2);
+    if (x) {
+        tree[0][parent_nr].parent = 3;
+        parent_nr++;
+    }
+    x = next_board(tree[0][parent_nr].board,board,3);
+    if (x) {
+        tree[0][parent_nr].parent = 4;
+        parent_nr++;
     }
 
-    for (int p = 0; p < 1; p++) { //loop to test if there is a new parent for each direction
-        ofstream next_node("input.txt");
-        for (int i = 0; i < 4; ++i) {  //write the board with each move from 0-3 in input.txt to get the files for the parent boards
-           for (int j = 0; j < 4; ++j) {
+    cout<<parent_nr;
+    //parent_nr will keep the number of valid parents, ex 3 means 3 valid parents
 
-               if (board[i][j]){
-                   next_node<<(1<<board[i][j])<<" "; //shift back the log2
-               }
-               else next_node<<"0 ";
-           }
-           next_node<<'\n';
-        }
-        next_node<<p;//add the move
-        next_node<<'\n';
-        next_node.close();
-        next_board("input.txt");
-    }
+    //  for (int i = 0; i < 4; ++i) {  //write in parents
+    //     for (int j = 0; j < 4; ++j) {
+    //             p1.board[i][j] = board1[i][j];
+    //             p2.board[i][j] = board2[i][j];
+    //             p3.board[i][j] = board3[i][j];
+    //             p4.board[i][j] = board4[i][j];
+    //     }
+    // }
     
 
-    for (int r=0; r<depth; r++){ //every row
+    // for (int r=0; r<depth; r++){ //every row
 
-    }
+    // }
 
     brd.close();
 
@@ -96,45 +113,35 @@ int evaluate(int board[4][4]){
 
 }
 
-void next_board(string s){  //given an input file with a state and a move, writes in output.txt how the next board will look like, if valid
+bool next_board(int o_board[4][4], int i_board[4][4], int move){  //given an input board, an output board and a move, writes in the output board how the next board will look like, returning 1 if valid and 0 if not
+    
     int a[4][4] = {{0,0,0,0},
                    {0,0,0,0},
                    {0,0,0,0},
                    {0,0,0,0}};
-    ifstream f(s);
-    int x{};
-    for (int i = 0; i < 4; ++i) {  //read board from file
-        for (int j = 0; j < 4; ++j) {
-            f>>x;
-            if(x) a[i][j]=int(log2(x));
-        }
-    }
-    int move;
-    f>>move; //read move
-    cout<<move;
+
+    for (int i = 0; i < 4; ++i) //copy input board in a
+        for (int j = 0; j < 4; ++j) 
+            a[i][j]=i_board[i][j];
+
     bool legal_move=0;
+
     switch(move)
     {
-        case 0: move_up(legal_move, a); break;
+        case 0: move_up(legal_move, a); break; //legal move will stay 0 if the move is invalid and 1 if valid, and a will change accordingly
         case 1: move_right(legal_move, a); break;
         case 2: move_down(legal_move, a); break;
         case 3: move_left(legal_move, a); break;
     }
 
-    if (legal_move) g<<"1\n"; //here write in output file 1 if the move is legal and -1 if it isn't
-    else {g<<"-1\n";}//return -1;}
+    if(legal_move) //write modified board in output board if move valid
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                o_board[i][j] = a[i][j];
 
-    for (int i = 0; i < 4; ++i) { //write modified board in output file
-        for (int j = 0; j < 4; ++j) {
-            if(a[i][j])
-                g<<(1<<a[i][j])<<" ";
-            else g<<"0 ";
-        }
-        g<<'\n';
-    }
-    f.close();
-    //return 0;
+    return legal_move;
 }
+
 //move functions
 void move_left(bool &ok, int a[4][4]){
     for(int i=0; i<4; i++){
