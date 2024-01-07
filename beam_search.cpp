@@ -97,7 +97,7 @@ int make_tree(string b, int depth, int width) {
         }
         sort(children, children + child_nr, child_cmp);
         best_move = children[0].root_move;
-        cerr<<best_move<<" ";
+        // cerr<<best_move<<" ";
 
         for (int r=0; r<depth; ++r) { 
             // generate all possible moves
@@ -118,12 +118,18 @@ int make_tree(string b, int depth, int width) {
 
     }
     int maxi=-1;
-    int rez=0;
-    for (int i=0; i<4; i++)
+    int rez=1;
+    for (int i=0; i<4; i++) {
+        cerr<<i<<' '<<freq[i]<<' ';
         maxi=max(maxi, freq[i]);
-    for (int i=0; i<4; i++) if(freq[i]==maxi){
-        rez=i;
-        break;
+    }
+        
+    for (int i=0; i<4; i++) {
+        
+        if(freq[i]==maxi){
+            rez=i;
+            break;
+        }
     }
 
     brd.close();
@@ -164,7 +170,7 @@ void generate_2(int board[4][4]){
             counter++;//count at which square we are
         }
     int random = rand() % nr_places; //will give a random nr in range of the empty spaces
-    board[free_places[random]/4][free_places[random]%4] = 2; //said square will become 2
+    board[free_places[random]/4][free_places[random]%4] = 1; //said square will become 2
 }
 
 //evaluates a state/board

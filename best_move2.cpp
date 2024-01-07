@@ -26,7 +26,7 @@ int make_generations(node out[], node in[], int width);
 int make_children(node out[], node in[], int width);
 
 bool gen_cmp(node a, node b){
-    return (a.score < b.score);
+    return rand()%2;
 }
 
 bool child_cmp(node a, node b) {
@@ -42,10 +42,10 @@ void debug(int board[4][4])
     }
 }
 int main(){
-    // srand(time(0)); //for the random function
-    int tree_depth=5, tree_width=200;
+    srand(time(0)); //for the random function
+    int tree_depth=10, tree_width=100;
     //here I should create the tree using two vectors with min max beam search and then choose the children using the eval function
-    int result = make_tree("C:/2048_env/2048-tree/tree.txt",tree_depth,tree_width);
+    int result = make_tree("Z:/GitHub/2048-environment/tree.txt",tree_depth,tree_width);
 
     cout<<to_string(result); 
 
@@ -96,7 +96,7 @@ int make_tree(string b, int depth, int width) {
         child_nr = make_children(children, generations, min(number_of_generations, width));
         if(!child_nr) break;
         // sort all moves decreasingly
-        sort(children, children + child_nr, child_cmp);
+        sort(children, children + child_nr, gen_cmp);
         best_move=children[0].root_move;
     }
     brd.close();
@@ -115,7 +115,7 @@ int make_generations(node out[], node in[], int width){
                     for(int ii=0; ii<4; ++ii)
                         for(int jj=0; jj<4; ++jj)
                             out[index_out].board[ii][jj]=in[index_in].board[ii][jj];
-                    out[index_out].board[i][j]=2;
+                    out[index_out].board[i][j]=1;
                     out[index_out].root_move = in[index_in].root_move;
                     out[index_out].score=evaluate(out[index_out].board);
                     if(out[index_out].score < 5) continue;
