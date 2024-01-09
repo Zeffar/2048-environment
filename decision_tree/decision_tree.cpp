@@ -1,4 +1,4 @@
-// Attempt at making a decision tree using a MCTS approach.
+// Attempt at making a decision tree using a pure MCTS approach.
 // The memory is dynamically allocated in this approach
 #include <fstream>
 #include <unordered_map>
@@ -18,12 +18,12 @@ struct node {
     node* parent;
     vector<node*> children;
     int visits;
-    int win_score;
-
+    int moves;
+    long long total_score;
     //constructor
     node(int a[4][4], int move, int evalScore, node* parent) : 
         parent_move(move), score(evalScore), 
-        parent(nullptr), visits(0), win_score(0) {
+        parent(nullptr), visits(0), moves(0),  total_score(0) {
 
         for(int i=0; i<4; ++i)
             for(int j=0; j<4; ++j)
@@ -35,7 +35,7 @@ struct node {
     //default constructor
     node() : 
         parent_move(-1), score(0), 
-        parent(nullptr), visits(0), win_score(0) {
+        parent(nullptr), visits(0), moves(0), total_score(0) {
 
             for(int i=0; i<4; ++i)
             for(int j=0; j<4; ++j)
@@ -50,19 +50,35 @@ struct node {
  
 };
 
+unordered_map<int, int> table_score = {
+    {1, 0},
+    {2, 4},
+    {3, 16},
+    {4, 48},
+    {5, 128},
+    {6, 320},
+    {7, 768},
+    {8, 1792},
+    {9, 4096},
+    {10, 9216},
+    {11, 20480},
+    {12, 45056},
+    {13, 98304}
+};
+
 void move_up(bool &ok, int a[4][4]);
 void move_right(bool &ok, int a[4][4]);
 void move_down(bool &ok, int a[4][4]);
 void move_left(bool &ok, int a[4][4]);
-int MCTS(node* root);
-node* select_node(node* state);
-bool is_terminal(node* state);
-bool is_leaf (node *state);
-int simulate_random_play(node* node);
-void expand_node(node* state);
+int score(node* state);
+int simulate_random_play(node* node, int& root_move);
+// int simulate_random_play_movecount(node* node, int& root_move);  Plays for longer survival, not for better score, yields simmilar results.
+//if you want to try it, change to this in MCTS() and uncomment the function;
 void generate_2(int board[4][4]);
-void backpropagate(node* state, int score);
-int choose_move(node* state);
+int MCTS (node* root);
+bool random_sort(int a, int b) {
+    return rand()%2;
+}
 void debug(node* state) {
     for (int i=0; i<4; ++i) {
         for (int j=0; j<4; ++j)
@@ -73,96 +89,128 @@ void debug(node* state) {
     }
 }
 
-int main() {
-    ifstream read_tree("Z:/GitHub/2048-environment/tree.txt");
+int main(int argc, char* argv[]) {
+
+    string file = "Z:/GitHub/2048-environment/decision_tree/tree.txt";
+    // if(argc>0) {
+    //     file = argv[0];
+    // }
+    ifstream read_tree(file);
     srand(time(0));
 
     node* root = new node();
     for(int i=0; i<4; ++i) {
         for(int j=0; j<4; ++j) {
-            int x; read_tree>>x;
-            if(x) root->board[i][j]=static_cast<int>(log2(x));
+            int x; read_tree >> x;
+            if(x) root -> board[i][j] = static_cast<int>(log2(x));
         }
     }
-    
-    cout<<MCTS(root);
+    cout << MCTS(root);
 }
 
-int MCTS(node *root) {
-    int runs = 1;
+int MCTS (node* root) {
+    int zerocount=0;
+    for(int i=0; i<4; i++)
+        for(int j=0; j<4; j++)
+            if(root->board[i][j]==0) zerocount++;
+    int runs=0;
+    if(zerocount > 7) runs = 1000;
+    else if (zerocount > 2) runs = 3000;
+    else runs = 5000;
+
+    long long scores[4] = {0, 0, 0, 0};
+    long long visits[4] = {0, 0, 0, 0};
     for(int iterations = 0; iterations < runs; ++iterations) {
-        node* selected_node = select_node(root);
-        if (!is_terminal(selected_node)) {
-            expand_node(selected_node);
-        }
-        int result = simulate_random_play(selected_node);
-        backpropagate(selected_node, result);
+        int first_move = -1;
+        int result = simulate_random_play(root, first_move);
+        scores[first_move] += result;
+        visits[first_move] += 1;
     }
-    return choose_move(root);
-}
-
-void backpropagate(node* state, int score) {
-
-}
-
-int choose_move(node* state) {
-
-}
-
-int simulate_random_play(node* state) {
     
-}
-
-void expand_node(node* state) {
-
-    for(int move=0; move<4; ++move) {
-        node* new_state = new node(state->board, move, 0, state); //score is 0, fix later
-        bool legal_move = 0;
-        switch (move) {
-            case 0: move_up(legal_move, new_state->board); break; 
-            case 1: move_right(legal_move, new_state->board); break;
-            case 2: move_down(legal_move, new_state->board); break;
-            case 3: move_left(legal_move, new_state->board); break;
-        }
-        if(!legal_move) {
-            delete new_state;
-        }
-        else {
-            generate_2(new_state->board);
-            state->children.push_back(new_state);
-        }
-    }
-}
-
-node* select_node(node* state) {
-
-    while(true) {
-
-        if (is_leaf(state)) return state;
-        int children_number = state->children.size();
-        int choice = rand() % children_number;
-        state = state ->children[choice]; 
-    }
-}
-
-bool is_leaf (node *state) {
-    return (state->children.size() == 0);
-}
-
-bool is_terminal(node* state) { 
+    int best_score = -1, move = -1;
     for(int i=0; i<4; i++) {
-        node* new_board = new node(state->board, 0, 0, nullptr);
-        bool legal_move = 0;
-        switch (i) {
-            case 0: move_up(legal_move, new_board->board); break; 
-            case 1: move_right(legal_move, new_board->board); break;
-            case 2: move_down(legal_move, new_board->board); break;
-            case 3: move_left(legal_move, new_board->board); break;
+        if(!visits[i]) continue;
+        long long final_score = (scores[i]) / (visits[i]);
+        if(final_score>best_score) {
+            best_score = final_score;
+            move = i;
         }
-        if(legal_move) return false;
     }
-    return true;
+    return move;
+
 }
+
+// int simulate_random_play_movecount(node* state, int& root_move) {
+//     node* new_state = new node(state->board, 0, 0, state); 
+//     int moves = 0;
+//     int v[4] = {0, 1, 2, 3};
+//     sort(v, v+4, random_sort);
+//     while(true) {
+//         bool game_over = 1;
+//        
+//        
+//         for (int index = 0; index < 4; ++index) {
+//             bool legal_move = 0;
+//             int move = v[index];
+//             switch (move) {
+//                 case 0: move_up(legal_move, new_state->board); break; 
+//                 case 1: move_right(legal_move, new_state->board); break;
+//                 case 2: move_down(legal_move, new_state->board); break;
+//                 case 3: move_left(legal_move, new_state->board); break;
+//             }
+//
+//             if(legal_move) {
+//                 generate_2(new_state->board);
+//                 if(root_move == -1) root_move = move;
+//                 moves++;
+//                 game_over = 0;
+//                 break;
+//             }
+//         }
+//       
+//         if(game_over) return moves;
+//     }
+// }
+
+int simulate_random_play(node* state, int& root_move) {
+    node* new_state = new node(state->board, 0, 0, state); 
+    
+    int v[4] = {2, 1, 3, 0};
+    
+    // for(int i=0; i<4; i++) cout<<v[i]<<" ";
+    while(true) {
+        bool game_over = 1;
+        sort(v, v+4, random_sort);
+        for (int index = 0; index < 4; ++index) {
+            bool legal_move = 0;
+            int move = v[index];
+            switch (move) {
+                case 0: move_up(legal_move, new_state->board); break; 
+                case 1: move_right(legal_move, new_state->board); break;
+                case 2: move_down(legal_move, new_state->board); break;
+                case 3: move_left(legal_move, new_state->board); break;
+            }
+
+            if(legal_move) {
+                generate_2(new_state->board);
+                if(root_move == -1) root_move = move;
+                game_over = 0;
+                break;
+            }
+        }
+        
+        if(game_over) return score(new_state);
+    }
+}
+
+int score (node* state) {
+    int evalScore=0;
+    for(int i=0; i<4; ++i)
+        for(int j=0; j<4; ++j)
+            evalScore+=table_score[state->board[i][j]];
+    return evalScore;
+}
+
 
 void generate_2(int board[4][4]){
     //parse the board, find all places which are empty, choose randomly between them, insert a 2 in said place
