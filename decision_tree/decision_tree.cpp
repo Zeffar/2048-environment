@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
 
     string file = "Z:/GitHub/2048-environment/decision_tree/tree.txt";
     // if(argc>0) {
-    //     file = argv[0];
+    //     file = argv[0]; 
     // }
     ifstream read_tree(file);
     srand(time(0));
