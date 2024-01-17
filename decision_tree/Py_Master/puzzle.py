@@ -45,7 +45,8 @@ class GameGrid(Frame):
         self.mainloop()
 
     def init_grid(self):
-        background = Frame(self, bg=c.BACKGROUND_COLOR_GAME, width=c.SIZE, height=c.SIZE)
+        background = Frame(self, bg=c.BACKGROUND_COLOR_GAME,
+                           width=c.SIZE, height=c.SIZE)
         background.grid()
 
         for i in range(c.GRID_LEN):
@@ -80,7 +81,8 @@ class GameGrid(Frame):
             for j in range(c.GRID_LEN):
                 new_number = self.matrix[i][j]
                 if new_number == 0:
-                    self.grid_cells[i][j].configure(text="", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[i][j].configure(
+                        text="", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 else:
                     self.grid_cells[i][j].configure(
                         text=str(new_number),
@@ -89,21 +91,21 @@ class GameGrid(Frame):
                     )
         self.update_idletasks()
 
-
     def key_down(self, event):
         key = event.keysym
         # print(event)
         if key == c.NEXT_BOARD:
-            writePath="Z:/GitHub/2048-environment/decision_tree/tree.txt"
+            writePath = "D:/Afaculta/Anul 3 sem 1/RL/Proiect/2048-environment/decision_tree/tree.txt"
             with open(writePath, "w") as f:
                 for i in range(4):
-                    for j in range (4):
+                    for j in range(4):
                         # print(self.matrix[i][j], end=' ')
                         print(self.matrix[i][j], file=f, end=' ')
                     print('\n', file=f, end='')
                     # print('\n', end='')
 
-            move = subprocess.run(["Z:/GitHub/2048-environment/decision_tree/MCTS.exe"], capture_output=True, text=True).stdout.strip()
+            move = subprocess.run(["D:/Afaculta/Anul 3 sem 1/RL/Proiect/2048-environment/decision_tree/MCTS.exe"],
+                                  capture_output=True, text=True).stdout.strip()
             if move in self.commands:
                 self.matrix, done = self.commands[move](self.matrix)
                 if done:
