@@ -51,7 +51,7 @@ class Environment_2048:
         """
         This functions checks if the action is "legal".
         An action is legal when tiles merge.
-        If the action is ilegal, the state remains the same
+        If the action is illegal, the state remains the same
         """
         commands = {
             0: logic.up,
@@ -76,7 +76,7 @@ class Environment_2048:
         Calculates the reward/penalty for taking a specific action
         """
         reward = 0
-        
+
         # Reward for increase in score (sum of tiles)
         reward += self.calculate_score_increase(old_state, next_state)
 
