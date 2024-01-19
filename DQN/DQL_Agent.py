@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import random 
-from DQN_networks import DQN, ReplayBuffer
+from DQL_Networks import DQN, ReplayBuffer
 
 class DQNAgent:
     def __init__(self, state_size, action_size):
@@ -16,9 +16,13 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-4)
         self.loss_fn = nn.MSELoss()
 
-        # Hyperparameters
-        self.gamma = 0.99  # Discount factor
-        self.epsilon = 1.0  # Exploration rate
+        # HYPERPARAMETERS
+
+        # Discount factor
+        self.gamma = 0.99 
+
+        # Exploration rate
+        self.epsilon = 1.0 
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
 
@@ -58,3 +62,4 @@ class DQNAgent:
 
     def update_target_network(self):
         self.target_model.load_state_dict(self.model.state_dict())
+
