@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cstring>
+#include <random>
 #include <cmath>         
 #include <algorithm>
 #include <iostream>
@@ -20,7 +21,7 @@ struct node {
     int visits;
     int moves;
     long long total_score;
-    //constructor
+    //copy constructor
     node(int a[4][4], int move, int evalScore, node* parent) : 
         parent_move(move), score(evalScore), 
         parent(nullptr), visits(0), moves(0),  total_score(0) {
@@ -37,7 +38,7 @@ struct node {
         parent_move(-1), score(0), 
         parent(nullptr), visits(0), moves(0), total_score(0) {
 
-            for(int i=0; i<4; ++i)
+        for(int i=0; i<4; ++i)
             for(int j=0; j<4; ++j)
                 this -> board[i][j] = 0;
         }
@@ -76,9 +77,6 @@ int simulate_random_play(node* node, int& root_move);
 //if you want to try it, change to this in MCTS() and uncomment the function;
 void generate_2(int board[4][4]);
 int MCTS (node* root);
-bool random_sort(int a, int b) {
-    return rand()%2;
-}
 void debug(node* state) {
     for (int i=0; i<4; ++i) {
         for (int j=0; j<4; ++j)
@@ -89,12 +87,10 @@ void debug(node* state) {
     }
 }
 
-int main(int argc, char* argv[]) {
-
-    string file = "Z:/GitHub/2048-environment/decision_tree/tree.txt";
-    // if(argc>0) {
-    //     file = argv[0]; 
-    // }
+int main() {
+    
+    string file = "/home/geo/Github/2048-environment/decision_tree/tree.txt";
+    
     ifstream read_tree(file);
     srand(time(0));
 
@@ -105,6 +101,7 @@ int main(int argc, char* argv[]) {
             if(x) root -> board[i][j] = static_cast<int>(log2(x));
         }
     }
+    
     cout << MCTS(root);
 }
 
@@ -136,6 +133,7 @@ int MCTS (node* root) {
             move = i;
         }
     }
+    
     return move;
 
 }
@@ -175,12 +173,11 @@ int MCTS (node* root) {
 int simulate_random_play(node* state, int& root_move) {
     node* new_state = new node(state->board, 0, 0, state); 
     
-    int v[4] = {2, 1, 3, 0};
-    
-    // for(int i=0; i<4; i++) cout<<v[i]<<" ";
+    int v[4] = {0, 1, 2, 3};
     while(true) {
         bool game_over = 1;
-        sort(v, v+4, random_sort);
+        default_random_engine engine(rand());
+        shuffle(begin(v), end(v), engine);
         for (int index = 0; index < 4; ++index) {
             bool legal_move = 0;
             int move = v[index];
@@ -199,7 +196,11 @@ int simulate_random_play(node* state, int& root_move) {
             }
         }
         
-        if(game_over) return score(new_state);
+        if(game_over) {
+            int final_score = score(new_state);
+            delete new_state;
+            return final_score;
+        }
     }
 }
 

@@ -94,7 +94,7 @@ class GameGrid(Frame):
         key = event.keysym
         # print(event)
         if key == c.NEXT_BOARD:
-            writePath="Z:/GitHub/2048-environment/decision_tree/tree.txt"
+            writePath="/home/geo/Github/2048-environment/decision_tree/tree.txt"
             with open(writePath, "w") as f:
                 for i in range(4):
                     for j in range (4):
@@ -103,7 +103,7 @@ class GameGrid(Frame):
                     print('\n', file=f, end='')
                     # print('\n', end='')
 
-            move = subprocess.run(["Z:/GitHub/2048-environment/decision_tree/MCTS.exe"], capture_output=True, text=True).stdout.strip()
+            move = subprocess.run(["/home/geo/Github/2048-environment/decision_tree/MCTS"], capture_output=True, text=True).stdout.strip()
             if move in self.commands:
                 self.matrix, done = self.commands[move](self.matrix)
                 if done:
