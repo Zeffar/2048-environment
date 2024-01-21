@@ -1,3 +1,4 @@
 .vscode/
 .vs/
 DQN/__pycache__/
+DQN/dqn_workplace.ipynb
