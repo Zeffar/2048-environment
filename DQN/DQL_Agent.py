@@ -2,12 +2,13 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-import random 
 from DQL_Networks import DQN, ReplayBuffer
 
+
 class DQNAgent:
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, action_space):
         self.state_size = state_size
+        self.action_space = action_space
         self.action_size = action_size
         self.memory = ReplayBuffer(10000)
         self.model = DQN(state_size, action_size)
@@ -19,12 +20,12 @@ class DQNAgent:
         # HYPERPARAMETERS
 
         # Discount factor
-        self.gamma = 0.99 
+        self.gamma = 0.995
 
         # Exploration rate
-        self.epsilon = 1.0 
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon = 1.0
+        self.epsilon_min = 0.1
+        self.epsilon_decay = 0.0001
 
     def choose_action(self, state):
         if np.random.rand() <= self.epsilon:
@@ -42,24 +43,20 @@ class DQNAgent:
         minibatch = self.memory.sample(batch_size)
         states, actions, rewards, next_states, dones = zip(*minibatch)
 
-        states = torch.tensor(states, dtype=torch.float32)
-        actions = torch.tensor(actions, dtype=torch.long)
-        rewards = torch.tensor(rewards, dtype=torch.float32)
-        next_states = torch.tensor(next_states, dtype=torch.float32)
-        dones = torch.tensor(dones, dtype=torch.float32)
+        states = torch.tensor(np.array(states), dtype=torch.float32)
+        actions = torch.tensor(np.array(actions), dtype=torch.long)
+        rewards = torch.tensor(np.array(rewards), dtype=torch.float32)
+        next_states = torch.tensor(np.array(next_states), dtype=torch.float32)
 
-        Q_expected = self.model(states).gather(1, actions.unsqueeze(1)).squeeze(1)
-        Q_targets_next = self.target_model(next_states).max(1)[0].detach()
-        Q_targets = rewards + (self.gamma * Q_targets_next * (1 - dones))
+        Q_expected, _ = torch.max(self.model(states).squeeze(1), dim=1)
+        Q_targets_next, _ = torch.max(
+            self.target_model(next_states).squeeze(1), dim=1)
+        Q_targets = rewards + self.gamma * Q_targets_next
 
         loss = self.loss_fn(Q_expected, Q_targets)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
-
     def update_target_network(self):
         self.target_model.load_state_dict(self.model.state_dict())
-
