@@ -33,7 +33,7 @@ the script will read the board and output the resulting move in the terminal.
     3 - left
 ```
     
- 2. For Linux, cd into the 2048-environment directory and run the following commands:
+ 2. cd into the 2048-environment directory and run the following commands:
 ```
 g++ move.cpp -o main  ->  compiles the program, run if you change the source-code in move.cpp.
 ./main                ->  runs the program.
