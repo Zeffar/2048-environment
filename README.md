@@ -1,4 +1,4 @@
-2048 environment and MCTS simulation for RL 2023 - UniBuc
+2048 environment and MCTS simulation
 ```
 File contents for MCTS and GUI:
 └── decision_tree
